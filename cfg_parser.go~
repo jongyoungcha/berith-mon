@@ -1,0 +1,65 @@
+package config
+
+import (
+    "fmt"
+	"encoding/json"
+    // "io"
+    "log"
+    "os"
+    // "strings"
+)
+
+const cfgFilePath = "./config.json"
+const sampleData = string(`"{EthNode : {"host" : "192.168.56.102:22", "user" : "root", "passwd" : "jongyoungcha" }`)
+
+type CfgParser struct {
+    Nodes []Ethnode
+}
+
+type Ethnode struct {
+    Host string    `json:"host"`
+    User string    `json:"user"`
+    Passwd string  `json:"passwd"`
+}
+
+
+var testNodes = []Ethnode {
+	Ethnode {
+		Host:"192.168.56.102:22",
+		User:"root",
+		Passwd:"jongyoungcha",
+	},
+	Ethnode {
+		Host:"192.168.56.103:22",
+		User:"root",
+		Passwd:"jongyoungcha",
+	},
+}
+
+
+func (parser *CfgParser) Load() bool {
+
+	var ethnodes Ethnode
+
+    _, err := os.Stat(cfgFilePath)
+    
+    if err == nil {
+        log.Printf("file was exsiting", cfgFilePath)
+    } else if os.IsNotExist(err) {
+		
+        log.Printf("file not exists", cfgFilePath)
+    } else {
+        log.Printf("file %s stat error %v", cfgFilePath, err)
+	}
+	
+	err = json.Unmarshal([]byte(sampleData), &ethnodes)
+	if err != nil {
+		fmt.Println("Couldn't unmarshal the string...(",err,")")
+	}
+	
+	
+    return err == nil
+}
+
+
+

@@ -1,0 +1,16 @@
+{
+	"Nodes":[
+		{
+			"host": "192.168.0.160:22",
+			"user": "root",
+			"passwd": "dusrn"
+		},
+		{
+			"host": "192.168.0.161:22",
+			"user": "root",
+			"passwd": "dusrn"
+		}
+	]
+}
+
+

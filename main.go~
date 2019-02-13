@@ -1,0 +1,98 @@
+package main
+
+import (
+    "io"
+	"fmt"
+	"golang.org/x/crypto/ssh"
+	"chan/jonitoring-eth/config"
+    // "golang.org/x/crypto/ssh/terminal"
+    // "github.com/nsf/termbox-go"
+)
+
+
+var cfgParser config.CfgParser
+
+
+func handleError(err error){
+	if err != nil {
+        if err == io.EOF{
+            return;
+        } 
+        panic(err)
+    }
+}
+
+
+func main() {
+	if cfgParser.Load() == false {
+		fmt.Println("Error!!p")
+	}
+	
+    // fmt.Println("Remote host: ", targetNodes)
+    readBuff := make([]byte, 1000)
+    
+    fmt.Println(len(readBuff))
+    
+    for _, targetNode := range targetNodes {
+        _, session, err := connectToHost(targetNode)
+        if err != nil {
+            fmt.Println("Coudlnt connect to server...")
+            fmt.Println(err)
+            continue;
+        }
+        
+        sshIn, err := session.StdinPipe()
+        if err != nil {
+            fmt.Println(err)
+            return;
+        }
+        
+        sshOut, err := session.StdoutPipe()
+        if err != nil {
+            fmt.Println(err)
+            return;
+        }
+        
+        err = session.Run("tail output")
+        if err != nil {
+            fmt.Println(err)
+            return;
+        }
+        sshIn.Write([]byte("ls"))
+        _, err = sshIn.Write([]byte("ls\n"))
+        handleError(err)
+        
+        // for i := 0; i < 10; i++ {
+        n, err := sshOut.Read(readBuff)
+        if err != nil {
+            fmt.Println(err)
+            return;
+        }
+
+        fmt.Println(string(readBuff))
+        fmt.Println("readed ", n)
+    }
+}
+
+
+func connectToHost(node config.Ethnode) (*ssh.Client, *ssh.Session, error){
+    sshConfig := &ssh.ClientConfig{
+        User: node.User,
+        Auth: []ssh.AuthMethod{ssh.Password(node.Passwd)},
+    }
+    
+    sshConfig.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+    
+    client, err := ssh.Dial("tcp", node.Host, sshConfig)
+    if err != nil{
+        return nil, nil, err
+    }
+    
+    session, err := client.NewSession()
+    if (err != nil) {
+        client.Close()
+        return nil, nil, err
+    }
+    
+    return client, session, nil
+}
