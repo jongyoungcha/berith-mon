@@ -48,7 +48,7 @@ func jonitoringBerith(context *cli.Context) error {
     readBuff := make([]byte, 1000)
     fmt.Println(len(readBuff))
     
-    for _, targetNode := range cfgParser.Nodes {
+    for _, targetNode := range cfgParser.TargetNodes {
         _, session, err := connectToHost(targetNode)
         if err != nil {
             fmt.Println("Coudlnt connect to server...")
